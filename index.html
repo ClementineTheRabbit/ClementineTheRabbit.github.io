@@ -1,0 +1,128 @@
+<html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+<style> circle {fill: gold; stroke: blue;} 
+        text {font-size: 18px;}
+        .button {
+  background-color: #f44336;
+  border: none;
+  color: white;
+  padding: 14px 40px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.container {
+  height: 100px;
+  position: relative;
+}
+
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+</style>
+<body>
+  <h1 style = "text-align:center;">2017 Car MPG Data</h1>
+  <p style = "text-align:center; font-size:120%;">Highway and City MPG are among the top factors to evaluate the performance of a car.  
+    This plot below lists all the available MPG data of cars from major manuafacturers in 2017. 
+    <br>From the scatter plot some trends could be seen. There are two additional pages available by clicking the buttons below, which will take you to explore more detials on electric cars and the trend between MPG and engine cylinders.
+ <div class="container">
+  <div class="center">
+  <button class="button" onclick="location.href='https://www.youtube.com/'">
+  Explore Electric Cars data</button>
+  <button class="button" onclick="location.href='https://www.youtube.com/'">
+  Trend between MPG and Engine Cylinders</button>
+  </div>
+</div>
+
+<svg width=2600 height=2600>
+
+  <text x = "1050" y = "720" font-weight="bold">City MPG</text>
+  <text x = "620" y = "350" font-weight="bold">Highway MPG</text>
+
+</svg>
+<script>
+
+var x_scale = d3.scaleLog().domain([10,150]).range([0,600]);
+var y_scale = d3.scaleLog().domain([10,150]).range([600,0]);
+
+d3.select("svg").append("g").attr("transform", "translate(800,50)")
+d3.csv("https://flunky.github.io/cars2017.csv", d3.autoType).then( 
+    function (d){
+        for (var i = 0; i < d.length; i++){
+         d3.select("g").selectAll("circle").data(d).enter().append("circle")
+         .attr("cx", function(d){return x_scale(d.AverageCityMPG);})
+         .attr("cy", function(d){return y_scale(d.AverageHighwayMPG);})
+         .attr("r", function(d){return (d.EngineCylinders + 2);}); 
+  }
+});
+
+var y_axis = d3.axisLeft(y_scale).tickValues([10,20,50,100])
+               .tickFormat(d3.format("~s"));
+d3.select("svg").append("g").attr("transform", "translate(800,50)")
+  .call(y_axis);
+var x_axis = d3.axisBottom(x_scale)
+               .tickValues([10,20,50,100])
+               .tickFormat(d3.format("~s"));
+
+d3.select("svg").append("g").attr("transform", "translate(800,650)")
+  .call(x_axis);
+
+d3.select("svg").append("g").attr("transform", "translate(820,600)").append("text")
+  .text("* Circle size scales with the number of engine cylinders.")
+  .attr("fill", "olive");
+
+  const annotations = [
+        {
+          note: {
+            label: "Notice a trend here? click the button above to explore more.",
+            title: "MPG mostly ranges from 15 to 45 MPG"
+          },
+          x: 900,
+          y: 400,
+          dy: -80,
+          dx: 50
+        },{
+          type: d3.annotationCalloutCircle,
+          note: {
+            label: "These are electric cars, click the above button to learn more.",
+            title: "High MPG Cars",
+            wrap: 190
+          },
+          
+          subject: {
+            radius: 100
+          },
+          x: 1350,
+          y: 130,
+          dy: 150,
+          dx: 0
+        }].map(function(d){ d.color = "#E8336D"; return d})
+
+        const makeAnnotations = d3.annotation()
+          .type(d3.annotationLabel)
+          .annotations(annotations)
+
+        d3.select("svg")
+          .append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
+
+</script>
+</body>
+</html>
